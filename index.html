@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>翻翻乐游戏</title>
+<style>
+  :root{
+    --bg1:#fff7e7;
+    --bg2:#f6e4bd;
+    --green1:#b9e58a;
+    --green2:#7fd25f;
+    --green3:#49b245;
+    --green4:#2f9638;
+    --yellow1:#ffe791;
+    --yellow2:#f8cf56;
+    --brown:#734018;
+    --brown2:#9a5b24;
+    --panel:#fffdf6;
+    --border:#f0d596;
+    --shadow:0 14px 28px rgba(82,54,18,.16);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;
+    color:#5a2d10;
+    background:
+      radial-gradient(circle at 10% 10%, rgba(255,255,255,.75), transparent 16%),
+      radial-gradient(circle at 88% 8%, rgba(255,255,255,.55), transparent 14%),
+      linear-gradient(180deg,var(--bg1),var(--bg2));
+  }
+  .page{width:min(1500px,100%);margin:0 auto;padding:18px;}
+  .topbar{
+    display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px;
+  }
+  .title-wrap{display:flex;align-items:center;gap:14px;}
+  .logo{
+    width:72px;height:72px;border-radius:24px;display:grid;place-items:center;font-size:36px;
+    background:linear-gradient(145deg,#fff,#ffe699);border:4px solid #fff;box-shadow:var(--shadow);
+  }
+  h1{
+    margin:0;font-size:clamp(30px,3.1vw,50px);line-height:1;
+    color:#fff;text-shadow:0 4px 0 #8c4e1c,3px 0 0 #8c4e1c,-3px 0 0 #8c4e1c,0 -3px 0 #8c4e1c,0 10px 18px rgba(0,0,0,.18);
+    letter-spacing:1px;
+  }
+  .sub{margin-top:6px;font-weight:900;color:#7d4418;font-size:15px;}
+  .top-controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+  .select, .btn, textarea{
+    font-family:inherit;
+  }
+  .select{
+    min-width:150px;border:0;border-radius:999px;padding:11px 16px;background:#fff;color:#643111;
+    box-shadow:0 4px 0 #d1a54a,0 10px 16px rgba(82,54,18,.12);font-weight:900;
+  }
+  .btn{
+    border:0;border-radius:999px;padding:11px 16px;background:linear-gradient(180deg,#fff7cf,#ffd46c);color:#6b3512;
+    font-weight:900;cursor:pointer;box-shadow:0 4px 0 #c68a2f,0 10px 16px rgba(82,54,18,.14);transition:.12s;
+  }
+  .btn.primary{background:linear-gradient(180deg,#ffb345,#ff7a34);color:#fff;box-shadow:0 4px 0 #c04d18,0 10px 16px rgba(82,54,18,.14);}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 #c68a2f,0 4px 10px rgba(82,54,18,.14);}
+  .btn.small{padding:8px 12px;font-size:13px;}
+
+  .layout{display:grid;grid-template-columns:320px 1fr 320px;gap:14px;align-items:start;}
+  .panel{
+    background:rgba(255,253,246,.95);border:4px solid var(--border);border-radius:28px;padding:14px;box-shadow:var(--shadow);
+  }
+  .panel h2{margin:0 0 10px;font-size:20px;color:#7a4118;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  .hint{font-size:13px;line-height:1.45;color:#8b592d;margin:4px 0 10px;}
+  .student-list{display:flex;flex-wrap:wrap;gap:8px;max-height:240px;overflow:auto;padding-right:2px;}
+  .chip{
+    border:2px solid #f2ca71;background:#fff9df;color:#713811;border-radius:999px;padding:8px 10px;font-weight:900;cursor:pointer;font-size:13px;
+  }
+  .chip.selected{background:#aae87a;border-color:#49b245;color:#235b11;}
+  .selected-players{display:flex;flex-direction:column;gap:8px;margin-top:8px;}
+  .player-row{
+    display:grid;grid-template-columns:34px 1fr auto;gap:8px;align-items:center;background:#fff8dc;border:2px solid rgba(122,59,18,.12);border-radius:16px;padding:6px 8px;
+  }
+  .avatar{
+    width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:900;font-size:13px;border:3px solid rgba(255,255,255,.86);
+    box-shadow:0 3px 7px rgba(0,0,0,.12);
+  }
+  .remove{border:0;background:#fff;border-radius:10px;border:1px solid #f0c36b;color:#7c4119;font-weight:900;padding:4px 8px;cursor:pointer;}
+  textarea{width:100%;min-height:110px;resize:vertical;border:2px solid #f0c36b;border-radius:16px;padding:10px;background:#fffdf1;color:#5a2d10;font-weight:700;display:none;}
+  textarea.show{display:block;}
+
+  .game-wrap{display:flex;flex-direction:column;gap:12px;}
+  .banner{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;background:linear-gradient(180deg,#fff7cf,#ffe287);
+    border-radius:24px;border:4px solid #fff;padding:10px 14px;box-shadow:var(--shadow);
+  }
+  .turn-box{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:1000;color:#7a4118;}
+  .turn-pill{background:#fff;border:2px dashed #d69a31;border-radius:999px;padding:7px 12px;font-size:14px;font-weight:900;}
+  .board-shell{
+    background:linear-gradient(180deg,#d2f1ab 0%, #9ee16e 30%, #66c853 70%, #45ad42 100%);
+    border-radius:42px; padding:20px; box-shadow:var(--shadow); border:6px solid rgba(255,255,255,.9); position:relative; overflow:hidden;
+  }
+  .board-shell::before{
+    content:"";position:absolute;inset:14px;border-radius:34px;border:3px dashed rgba(255,255,255,.22);pointer-events:none;
+  }
+  .board-title{
+    position:absolute;left:18px;top:16px;background:#6d350f;color:#fff;border-radius:999px;padding:8px 14px;font-size:13px;font-weight:1000;z-index:3;
+    box-shadow:0 6px 10px rgba(0,0,0,.12);
+  }
+  .game-board{
+    position:relative;z-index:2;display:grid;grid-template-columns:repeat(6, minmax(72px, 1fr));gap:14px;justify-items:center;align-items:center;
+    padding:50px 24px 20px;min-height:640px;
+  }
+  .card{
+    width:100%;max-width:96px;aspect-ratio:1/1;border-radius:50%;position:relative;cursor:pointer;perspective:900px;
+    filter:drop-shadow(0 8px 10px rgba(0,0,0,.12));
+  }
+  .card-inner{
+    position:absolute;inset:0;transform-style:preserve-3d;transition:transform .38s ease;
+  }
+  .card.flipped .card-inner,
+  .card.matched .card-inner{transform:rotateY(180deg);}
+  .face{
+    position:absolute;inset:0;border-radius:50%;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:8px;text-align:center;
+  }
+  .back{
+    background:linear-gradient(180deg,var(--yellow1),var(--yellow2));
+    border:4px solid rgba(255,246,200,.95); color:#9b6d18;
+    box-shadow:inset 0 -6px 0 rgba(186,131,27,.16), inset 0 0 0 2px rgba(255,255,255,.3);
+  }
+  .back::before{
+    content:"";position:absolute;inset:15%;border-radius:50%;border:2px dashed rgba(175,117,17,.2);
+  }
+  .qmark{font-size:30px;font-weight:1000;line-height:1;}
+  .front{
+    transform:rotateY(180deg);background:linear-gradient(180deg,#fffdf7,#fff2c5);
+    border:4px solid rgba(255,255,255,.95);color:#6e3711;box-shadow:inset 0 -6px 0 rgba(203,166,74,.15);
+  }
+  .icon{font-size:28px;line-height:1;margin-bottom:6px;}
+  .label{font-size:12px;font-weight:1000;line-height:1.1;word-break:break-word;}
+  .card.matched .front{background:linear-gradient(180deg,#fffbe9,#e9ffd6);}
+  .card.matched{cursor:default;}
+
+  .score-list{display:flex;flex-direction:column;gap:8px;}
+  .score-row{
+    display:grid;grid-template-columns:34px 1fr auto;gap:8px;align-items:center;background:#fff;border-radius:14px;padding:8px 9px;font-weight:900;
+  }
+  .score-row.active{outline:3px solid #ffd46c;background:#fffceb;}
+  .progress{height:9px;border-radius:999px;background:#f1d494;overflow:hidden;margin-top:4px;}
+  .progress > span{display:block;height:100%;background:linear-gradient(90deg,#67d44f,#ffd24f,#ff7a34);width:0%;}
+  .status-box{border-radius:20px;background:#fff8dc;border:3px solid rgba(255,255,255,.9);padding:10px;margin-top:12px;}
+  .status-title{font-size:15px;font-weight:1000;color:#7a4118;margin-bottom:8px;}
+  .log{height:250px;overflow:auto;display:flex;flex-direction:column;gap:6px;font-size:13px;}
+  .log-item{background:#fff;border-radius:12px;padding:7px 8px;border-left:6px solid #ffbf41;line-height:1.35;}
+  .mini-info{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .mini-card{background:#fff;border-radius:14px;padding:10px;text-align:center;font-weight:900;}
+  .mini-card span{display:block;color:#aa6a22;font-size:24px;margin-top:3px;}
+  .modal{position:fixed;inset:0;background:rgba(58,29,8,.42);display:none;place-items:center;z-index:100;padding:20px;}
+  .modal.show{display:grid;}
+  .modal-card{width:min(520px,92vw);background:linear-gradient(145deg,#fffdf1,#ffd977);border:8px solid #fff;border-radius:34px;padding:24px;text-align:center;box-shadow:0 24px 40px rgba(43,19,6,.25);}
+  .modal-emoji{font-size:72px;line-height:1;}
+  .modal-title{font-size:34px;font-weight:1000;color:#7a4118;margin:8px 0;}
+  .modal-text{font-size:17px;font-weight:800;color:#7d4d22;line-height:1.5;margin-bottom:16px;}
+
+  @media (max-width:1180px){
+    .layout{grid-template-columns:320px 1fr;}
+    .right-panel{grid-column:1 / -1;display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .right-panel > .status-wrap{display:contents;}
+    .log{height:190px;}
+  }
+  @media (max-width:860px){
+    .page{padding:10px;}
+    .layout{grid-template-columns:1fr;}
+    .right-panel{display:block;}
+    .game-board{grid-template-columns:repeat(4, minmax(64px, 1fr));min-height:auto;padding-top:56px;}
+    .card{max-width:88px;}
+    .top-controls{justify-content:flex-start;}
+    .banner{flex-direction:column;align-items:flex-start;}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="topbar">
+    <div class="title-wrap">
+      <div class="logo">🎲</div>
+      <div>
+        <h1>翻翻乐游戏</h1>
+        <div class="sub">主题切换 · 学生 PK · 翻牌配对大挑战</div>
+      </div>
+    </div>
+    <div class="top-controls">
+      <select class="select" id="themeSelect">
+        <option value="fruits">水果主题</option>
+        <option value="animals">动物主题</option>
+        <option value="ocean">海洋主题</option>
+        <option value="school">文具主题</option>
+        <option value="food">食物主题</option>
+      </select>
+      <button class="btn primary" id="startBtn">开始新局</button>
+      <button class="btn" id="restartBtn">重新洗牌</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel">
+      <h2>选择学生 <button class="btn small" id="editRosterBtn">编辑名单</button></h2>
+      <div class="hint">先选择参加 PK 的小朋友，再开始游戏。每次轮到一位小朋友，翻开两张卡片；配对成功得 1 分并继续，没配对成功就轮到下一位。</div>
+      <div class="student-list" id="studentList"></div>
+      <textarea id="rosterText"></textarea>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+        <button class="btn small" id="saveRosterBtn">保存名单</button>
+        <button class="btn small" id="restoreRosterBtn">恢复默认</button>
+      </div>
+      <h2 style="margin-top:14px;">参赛名单</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+        <button class="btn small" id="quickBtn">示例 4 人</button>
+        <button class="btn small" id="clearBtn">清空</button>
+      </div>
+      <div class="selected-players" id="selectedPlayers"></div>
+      <div class="status-box">
+        <div class="status-title">本局规则</div>
+        <div class="hint" style="margin:0;">
+          1. 翻开两张一样的卡片就配对成功。<br>
+          2. 配对成功：当前学生 +1 分，并且继续翻。<br>
+          3. 没配对成功：两张卡片翻回去，自动轮到下一位。<br>
+          4. 全部配对完成后，分数最高的小朋友获胜。
+        </div>
+      </div>
+    </section>
+
+    <section class="game-wrap">
+      <div class="banner">
+        <div class="turn-box" id="turnBox"><span>🎯</span><span>请选择学生并开始游戏</span></div>
+        <div class="turn-pill" id="themeBadge">当前主题：水果主题</div>
+      </div>
+      <div class="board-shell">
+        <div class="board-title">Memory Match</div>
+        <div class="game-board" id="gameBoard"></div>
+      </div>
+    </section>
+
+    <aside class="panel right-panel">
+      <div class="status-wrap">
+        <h2>PK 分数</h2>
+        <div class="score-list" id="scoreList"></div>
+        <div class="status-box">
+          <div class="status-title">游戏进度</div>
+          <div class="mini-info">
+            <div class="mini-card">已配对<span id="matchedCount">0</span></div>
+            <div class="mini-card">剩余卡片<span id="leftCount">36</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="status-wrap">
+        <div class="status-box" style="margin-top:0;">
+          <div class="status-title">游戏记录</div>
+          <div class="log" id="logBox"></div>
+        </div>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-card">
+    <div class="modal-emoji" id="modalEmoji">🏆</div>
+    <div class="modal-title" id="modalTitle">游戏结束</div>
+    <div class="modal-text" id="modalText"></div>
+    <button class="btn primary" id="modalOk">知道了</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const DEFAULT_ROSTER = ['Rocket','Cassie','Rachel','Bobo','Hannah','Cici','Joe','Leon','Sylvia','Gorman','Ryan','Aaron','Annie','Yuki','Linna','Helen','Ken','Charlie','Via','Eva','Zoey'];
+  const playerColors = ['#ff63b5','#48c7ff','#a36cff','#ff983e','#3edb72','#ffdb3b','#5a7cff','#ff5f5f','#38d5c8','#b984ff'];
+
+  const THEMES = {
+    fruits: {
+      name:'水果主题',
+      items:[
+        ['🍎','apple'],['🍌','banana'],['🍉','watermelon'],['🍓','strawberry'],['🍇','grape'],['🍒','cherry'],
+        ['🍍','pineapple'],['🥝','kiwi'],['🍑','peach'],['🍐','pear'],['🍋','lemon'],['🥭','mango'],
+        ['🫐','blueberry'],['🥥','coconut'],['🍈','melon'],['🍊','orange'],['🍏','green apple'],['🍅','tomato']
+      ]
+    },
+    animals: {
+      name:'动物主题',
+      items:[
+        ['🐶','dog'],['🐱','cat'],['🐰','rabbit'],['🐼','panda'],['🦊','fox'],['🐻','bear'],
+        ['🐸','frog'],['🐵','monkey'],['🦁','lion'],['🐷','pig'],['🐮','cow'],['🐔','chicken'],
+        ['🐧','penguin'],['🦄','unicorn'],['🐯','tiger'],['🐨','koala'],['🦉','owl'],['🐢','turtle']
+      ]
+    },
+    ocean: {
+      name:'海洋主题',
+      items:[
+        ['🐳','whale'],['🐬','dolphin'],['🦈','shark'],['🐙','octopus'],['🦀','crab'],['🐚','shell'],
+        ['🐠','fish'],['🪼','jellyfish'],['🦐','shrimp'],['⭐','starfish'],['🪸','coral'],['🐡','blowfish'],
+        ['🦭','seal'],['⚓','anchor'],['🚤','boat'],['🌊','wave'],['🐟','blue fish'],['🪝','hook']
+      ]
+    },
+    school: {
+      name:'文具主题',
+      items:[
+        ['✏️','pencil'],['🖍️','crayon'],['🖊️','pen'],['📘','book'],['📚','books'],['📏','ruler'],
+        ['✂️','scissors'],['🖇️','clip'],['🧷','pin'],['🧲','magnet'],['🎒','schoolbag'],['📎','paper clip'],
+        ['🗂️','folder'],['🧮','abacus'],['📝','note'],['📌','pushpin'],['🧽','eraser'],['🔍','magnifier']
+      ]
+    },
+    food: {
+      name:'食物主题',
+      items:[
+        ['🍔','burger'],['🍕','pizza'],['🍟','fries'],['🍩','donut'],['🍪','cookie'],['🍰','cake'],
+        ['🍜','noodles'],['🍣','sushi'],['🌭','hot dog'],['🥪','sandwich'],['🍿','popcorn'],['🧁','cupcake'],
+        ['🍦','ice cream'],['🥨','pretzel'],['🥟','dumpling'],['🍗','chicken'],['🥞','pancake'],['🍡','dango']
+      ]
+    }
+  };
+
+  let roster = loadRoster();
+  let selected = [];
+  let players = [];
+  let currentPlayerIndex = 0;
+  let cards = [];
+  let firstPick = null;
+  let secondPick = null;
+  let lockBoard = false;
+  let started = false;
+  let matchedPairs = 0;
+
+  const $ = (id) => document.getElementById(id);
+  const studentList = $('studentList');
+  const selectedPlayers = $('selectedPlayers');
+  const gameBoard = $('gameBoard');
+  const scoreList = $('scoreList');
+  const logBox = $('logBox');
+  const turnBox = $('turnBox');
+  const themeSelect = $('themeSelect');
+  const themeBadge = $('themeBadge');
+
+  function loadRoster(){
+    try{
+      const saved = localStorage.getItem('flipFunRoster');
+      if(saved){
+        const arr = JSON.parse(saved);
+        if(Array.isArray(arr) && arr.length) return arr;
+      }
+    }catch(e){}
+    return DEFAULT_ROSTER.slice();
+  }
+  function saveRoster(){ localStorage.setItem('flipFunRoster', JSON.stringify(roster)); }
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+  }
+
+  function renderRoster(){
+    studentList.innerHTML = '';
+    roster.forEach(name => {
+      const chip = document.createElement('button');
+      chip.className = 'chip' + (selected.includes(name) ? ' selected' : '');
+      chip.textContent = name;
+      chip.onclick = () => toggleStudent(name);
+      studentList.appendChild(chip);
+    });
+    $('rosterText').value = roster.join('\n');
+  }
+
+  function toggleStudent(name){
+    if(selected.includes(name)) selected = selected.filter(n => n !== name);
+    else selected.push(name);
+    syncPlayers();
+    renderRoster();
+    renderSelected();
+    renderScores();
+    updateTurnDisplay();
+  }
+
+  function syncPlayers(resetScores = false){
+    const old = players;
+    players = selected.map((name, i) => {
+      const existed = old.find(p => p.name === name);
+      return {
+        name,
+        color: existed ? existed.color : playerColors[i % playerColors.length],
+        score: resetScores ? 0 : (existed ? existed.score : 0)
+      };
+    });
+    if(currentPlayerIndex >= players.length) currentPlayerIndex = 0;
+  }
+
+  function renderSelected(){
+    selectedPlayers.innerHTML = '';
+    if(!selected.length){
+      selectedPlayers.innerHTML = '<div class="hint">还没有选择学生。可以点“示例 4 人”快速试玩。</div>';
+      return;
+    }
+    players.forEach((p, i) => {
+      const row = document.createElement('div');
+      row.className = 'player-row';
+      row.innerHTML = `
+        <div class="avatar" style="background:${p.color}">🐰</div>
+        <div style="font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(p.name)}</div>
+        <button class="remove">×</button>
+      `;
+      row.querySelector('.remove').onclick = () => removeStudent(p.name);
+      selectedPlayers.appendChild(row);
+    });
+  }
+
+  function removeStudent(name){
+    selected = selected.filter(n => n !== name);
+    syncPlayers(false);
+    renderRoster();
+    renderSelected();
+    renderScores();
+    updateTurnDisplay();
+  }
+
+  function buildDeck(){
+    const theme = THEMES[themeSelect.value];
+    themeBadge.textContent = `当前主题：${theme.name}`;
+    const base = theme.items.map((item, idx) => ({
+      key: `${themeSelect.value}-${idx}`,
+      icon: item[0],
+      label: item[1]
+    }));
+    const duplicated = [...base, ...base].map((item, idx) => ({
+      uid: `${item.key}-${idx}-${Math.random().toString(36).slice(2,7)}`,
+      key: item.key,
+      icon: item.icon,
+      label: item.label,
+      flipped: false,
+      matched: false
+    }));
+    cards = shuffle(duplicated);
+  }
+
+  function renderBoard(){
+    gameBoard.innerHTML = '';
+    cards.forEach((card, index) => {
+      const el = document.createElement('button');
+      el.className = 'card' + (card.flipped ? ' flipped' : '') + (card.matched ? ' matched' : '');
+      el.setAttribute('aria-label', card.label);
+      el.innerHTML = `
+        <div class="card-inner">
+          <div class="face back"><div class="qmark">?</div></div>
+          <div class="face front"><div class="icon">${card.icon}</div><div class="label">${escapeHtml(card.label)}</div></div>
+        </div>
+      `;
+      el.onclick = () => handleCardClick(index);
+      gameBoard.appendChild(el);
+    });
+    $('matchedCount').textContent = matchedPairs;
+    $('leftCount').textContent = cards.filter(c => !c.matched).length;
+  }
+
+  async function handleCardClick(index){
+    if(!started || lockBoard || !players.length) return;
+    const card = cards[index];
+    if(card.flipped || card.matched) return;
+
+    card.flipped = true;
+    renderBoard();
+
+    if(firstPick === null){
+      firstPick = index;
+      addLog(`🃏 ${players[currentPlayerIndex].name} 翻开了第 1 张卡片。`);
+      return;
+    }
+    if(secondPick === null){
+      secondPick = index;
+      lockBoard = true;
+      addLog(`🃏 ${players[currentPlayerIndex].name} 翻开了第 2 张卡片。`);
+
+      await sleep(550);
+      const first = cards[firstPick];
+      const second = cards[secondPick];
+
+      if(first.key === second.key){
+        first.matched = true;
+        second.matched = true;
+        matchedPairs += 1;
+        players[currentPlayerIndex].score += 1;
+        addLog(`✅ ${players[currentPlayerIndex].name} 配对成功：${first.label}，得 1 分，并继续翻牌。`);
+        firstPick = null;
+        secondPick = null;
+        lockBoard = false;
+        renderBoard();
+        renderScores();
+        updateTurnDisplay();
+        checkGameEnd();
+      }else{
+        addLog(`❌ ${players[currentPlayerIndex].name} 没有配对成功，轮到下一位。`);
+        await sleep(700);
+        first.flipped = false;
+        second.flipped = false;
+        firstPick = null;
+        secondPick = null;
+        lockBoard = false;
+        nextPlayer();
+        renderBoard();
+        renderScores();
+        updateTurnDisplay();
+      }
+    }
+  }
+
+  function nextPlayer(){
+    if(!players.length) return;
+    currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+  }
+
+  function renderScores(){
+    scoreList.innerHTML = '';
+    if(!players.length){
+      scoreList.innerHTML = '<div class="hint">选择学生后，这里会显示分数。</div>';
+      return;
+    }
+    const maxScore = Math.max(...players.map(p => p.score), 1);
+    players.forEach((p, i) => {
+      const row = document.createElement('div');
+      row.className = 'score-row' + (i === currentPlayerIndex && started ? ' active' : '');
+      const progress = Math.max(0, Math.min(100, (p.score / maxScore) * 100));
+      row.innerHTML = `
+        <div class="avatar" style="background:${p.color}">🐰</div>
+        <div>
+          <div>${i === currentPlayerIndex && started ? '👉 ' : ''}${escapeHtml(p.name)}</div>
+          <div class="progress"><span style="width:${progress}%"></span></div>
+        </div>
+        <div>${p.score}</div>
+      `;
+      scoreList.appendChild(row);
+    });
+  }
+
+  function updateTurnDisplay(){
+    if(!players.length){
+      turnBox.innerHTML = '<span>🎯</span><span>请选择学生并开始游戏</span>';
+      return;
+    }
+    const p = players[currentPlayerIndex] || players[0];
+    turnBox.innerHTML = `
+      <div class="avatar" style="background:${p.color}">🐰</div>
+      <span>${started ? '轮到 ' + escapeHtml(p.name) : '已选择 ' + players.length + ' 位学生'}</span>
+    `;
+  }
+
+  function addLog(text){
+    const item = document.createElement('div');
+    item.className = 'log-item';
+    item.textContent = text;
+    logBox.prepend(item);
+  }
+
+  function resetRound(){
+    firstPick = null;
+    secondPick = null;
+    lockBoard = false;
+    matchedPairs = 0;
+    currentPlayerIndex = 0;
+    players.forEach(p => p.score = 0);
+    buildDeck();
+    renderBoard();
+    renderScores();
+    updateTurnDisplay();
+    logBox.innerHTML = '';
+    addLog(`🎉 已切换到 ${THEMES[themeSelect.value].name}，准备开始！`);
+  }
+
+  function startGame(){
+    if(!players.length){
+      alert('请先选择参加 PK 的学生。');
+      return;
+    }
+    started = true;
+    resetRound();
+    updateTurnDisplay();
+    addLog(`🚩 游戏开始！当前由 ${players[currentPlayerIndex].name} 先翻牌。`);
+  }
+
+  function restartGame(){
+    if(!players.length){
+      alert('请先选择学生。');
+      return;
+    }
+    started = true;
+    resetRound();
+    addLog(`🔄 已重新洗牌。还是由 ${players[currentPlayerIndex].name} 先开始。`);
+  }
+
+  function checkGameEnd(){
+    if(matchedPairs !== THEMES[themeSelect.value].items.length) return;
+    started = false;
+    const max = Math.max(...players.map(p => p.score));
+    const winners = players.filter(p => p.score === max);
+    const text = winners.length === 1
+      ? `恭喜 ${winners[0].name} 获胜！共得到 ${winners[0].score} 分。`
+      : `平局！${winners.map(p => p.name).join('、')} 并列第一，都是 ${max} 分。`;
+    addLog('🏁 所有卡片都已经配对完成。');
+    openModal('🏆', '游戏结束', text);
+    updateTurnDisplay();
+  }
+
+  function openModal(emoji, title, text){
+    $('modalEmoji').textContent = emoji;
+    $('modalTitle').textContent = title;
+    $('modalText').textContent = text;
+    $('modal').classList.add('show');
+  }
+
+  function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+  $('modalOk').onclick = () => $('modal').classList.remove('show');
+  $('startBtn').onclick = startGame;
+  $('restartBtn').onclick = restartGame;
+  $('quickBtn').onclick = () => {
+    selected = roster.slice(0,4);
+    syncPlayers(true);
+    renderRoster(); renderSelected(); renderScores(); updateTurnDisplay();
+  };
+  $('clearBtn').onclick = () => {
+    selected = [];
+    syncPlayers(true);
+    started = false;
+    renderRoster(); renderSelected(); renderScores(); updateTurnDisplay();
+  };
+  $('editRosterBtn').onclick = () => $('rosterText').classList.toggle('show');
+  $('saveRosterBtn').onclick = () => {
+    const names = $('rosterText').value.split(/[\n,，、]+/).map(s => s.trim()).filter(Boolean);
+    if(!names.length){ alert('名单不能为空。'); return; }
+    roster = Array.from(new Set(names));
+    selected = selected.filter(n => roster.includes(n));
+    syncPlayers(false);
+    saveRoster();
+    renderRoster(); renderSelected(); renderScores(); updateTurnDisplay();
+  };
+  $('restoreRosterBtn').onclick = () => {
+    roster = DEFAULT_ROSTER.slice();
+    selected = [];
+    syncPlayers(true);
+    saveRoster();
+    renderRoster(); renderSelected(); renderScores(); updateTurnDisplay();
+  };
+  themeSelect.onchange = () => {
+    themeBadge.textContent = `当前主题：${THEMES[themeSelect.value].name}`;
+    if(!started){
+      buildDeck();
+      matchedPairs = 0;
+      renderBoard();
+    }
+  };
+
+  buildDeck();
+  renderRoster();
+  renderSelected();
+  renderBoard();
+  renderScores();
+  updateTurnDisplay();
+  addLog('🌟 先选择学生，再选择主题，最后点击“开始新局”。');
+})();
+</script>
+</body>
+</html>
