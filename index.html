@@ -196,6 +196,7 @@
       </select>
       <button class="btn primary" id="startBtn">开始新局</button>
       <button class="btn" id="restartBtn">重新洗牌</button>
+      <button class="btn" id="nextPlayerBtn">下一位小朋友</button>
     </div>
   </header>
 
@@ -221,7 +222,8 @@
           1. 翻开两张一样的卡片就配对成功。<br>
           2. 配对成功：当前学生 +1 分，并且继续翻。<br>
           3. 没配对成功：两张卡片翻回去，自动轮到下一位。<br>
-          4. 全部配对完成后，分数最高的小朋友获胜。
+          4. 老师也可以手动点击“下一位小朋友”跳过当前学生。<br>
+          5. 全部配对完成后，分数最高的小朋友获胜。
         </div>
       </div>
     </section>
@@ -517,6 +519,21 @@
     currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
   }
 
+  function manualNextPlayer(){
+    if(!started || !players.length || lockBoard) return;
+    const previous = players[currentPlayerIndex].name;
+    if(firstPick !== null && cards[firstPick]) cards[firstPick].flipped = false;
+    if(secondPick !== null && cards[secondPick]) cards[secondPick].flipped = false;
+    firstPick = null;
+    secondPick = null;
+    lockBoard = false;
+    nextPlayer();
+    renderBoard();
+    renderScores();
+    updateTurnDisplay();
+    addLog(`⏭ ${previous} 手动跳过，轮到 ${players[currentPlayerIndex].name}。`);
+  }
+
   function renderScores(){
     scoreList.innerHTML = '';
     if(!players.length){
@@ -620,6 +637,7 @@
   $('modalOk').onclick = () => $('modal').classList.remove('show');
   $('startBtn').onclick = startGame;
   $('restartBtn').onclick = restartGame;
+  $('nextPlayerBtn').onclick = manualNextPlayer;
   $('quickBtn').onclick = () => {
     selected = roster.slice(0,4);
     syncPlayers(true);
