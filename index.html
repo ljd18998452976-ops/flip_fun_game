@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -59,6 +60,7 @@
     font-weight:900;cursor:pointer;box-shadow:0 4px 0 #c68a2f,0 10px 16px rgba(82,54,18,.14);transition:.12s;
   }
   .btn.primary{background:linear-gradient(180deg,#ffb345,#ff7a34);color:#fff;box-shadow:0 4px 0 #c04d18,0 10px 16px rgba(82,54,18,.14);}
+  .btn.green{background:linear-gradient(180deg,#b8ee7d,#6ccd57);color:#245d17;box-shadow:0 4px 0 #3f9f35,0 10px 16px rgba(82,54,18,.14);}
   .btn:active{transform:translateY(3px);box-shadow:0 1px 0 #c68a2f,0 4px 10px rgba(82,54,18,.14);}
   .btn.small{padding:8px 12px;font-size:13px;}
 
@@ -231,7 +233,10 @@
     <section class="game-wrap">
       <div class="banner">
         <div class="turn-box" id="turnBox"><span>🎯</span><span>请选择学生并开始游戏</span></div>
-        <div class="turn-pill" id="themeBadge">当前主题：水果主题</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <div class="turn-pill" id="themeBadge">当前主题：水果主题</div>
+          <button class="btn green" id="nextPlayerBtnBanner">下一位小朋友</button>
+        </div>
       </div>
       <div class="board-shell">
         <div class="board-title">Memory Match</div>
@@ -272,7 +277,7 @@
 
 <script>
 (() => {
-  const DEFAULT_ROSTER = ['Rocket','Cassie','Rachel','Bobo','Hannah','Cici','Joe','Leon','Sylvia','Gorman','Ryan','Aaron','Annie','Yuki','Linna','Helen','Ken','Charlie','Via','Eva','Zoey'];
+  const DEFAULT_ROSTER = ['Rocket','Cici','Joe','Cassie','Rachel','Bobo','Hannah','Leon','Sylvia','Gorman','Ryan','Aaron','Annie','Yuki','Linna','Helen','Ken','Charlie','Via','Eva','Zoey'];
   const playerColors = ['#ff63b5','#48c7ff','#a36cff','#ff983e','#3edb72','#ffdb3b','#5a7cff','#ff5f5f','#38d5c8','#b984ff'];
 
   const THEMES = {
@@ -374,9 +379,14 @@
     $('rosterText').value = roster.join('\n');
   }
 
+  function sortSelectedByRoster(){
+    selected = roster.filter(name => selected.includes(name));
+  }
+
   function toggleStudent(name){
     if(selected.includes(name)) selected = selected.filter(n => n !== name);
     else selected.push(name);
+    sortSelectedByRoster();
     syncPlayers();
     renderRoster();
     renderSelected();
@@ -520,7 +530,7 @@
   }
 
   function manualNextPlayer(){
-    if(!started || !players.length || lockBoard) return;
+    if(!players.length || lockBoard) return;
     const previous = players[currentPlayerIndex].name;
     if(firstPick !== null && cards[firstPick]) cards[firstPick].flipped = false;
     if(secondPick !== null && cards[secondPick]) cards[secondPick].flipped = false;
@@ -638,6 +648,7 @@
   $('startBtn').onclick = startGame;
   $('restartBtn').onclick = restartGame;
   $('nextPlayerBtn').onclick = manualNextPlayer;
+  $('nextPlayerBtnBanner').onclick = manualNextPlayer;
   $('quickBtn').onclick = () => {
     selected = roster.slice(0,4);
     syncPlayers(true);
@@ -655,6 +666,7 @@
     if(!names.length){ alert('名单不能为空。'); return; }
     roster = Array.from(new Set(names));
     selected = selected.filter(n => roster.includes(n));
+    sortSelectedByRoster();
     syncPlayers(false);
     saveRoster();
     renderRoster(); renderSelected(); renderScores(); updateTurnDisplay();
